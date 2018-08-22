@@ -43,7 +43,8 @@ exports.validateRegister = (req, res, next) => {
 exports.register = async (req, res, next) => {
   const user = new User({
     name: req.body.name,
-    email: req.body.email
+    email: req.body.email,
+    username: req.body.email
   });
   const register = promisify(User.register, User); // turn callback based method to promise
   await register(user, req.body.password);

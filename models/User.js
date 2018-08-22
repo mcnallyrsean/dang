@@ -25,6 +25,9 @@ const userSchema = new mongoose.Schema({
   },
   resetPasswordExpires: {
     type: Date
+  },
+  username: {
+    type: String
   }
 });
 
@@ -33,7 +36,13 @@ userSchema.virtual("gravatar").get(function() {
   return `https://gravatar.com/avatar/${hash}?s=200`;
 });
 
-userSchema.plugin(passportLocalMongoose, { usernameField: "email" });
-userSchema.plugin(mongodbErrorHandler, { userField: "email" }); // or usernameField
+userSchema.plugin(passportLocalMongoose, {
+  usernameField: "email",
+  usernameUnique: false
+});
+userSchema.plugin(mongodbErrorHandler, {
+  usernameField: "email",
+  usernameUnique: false
+}); // or usernameField
 
 module.exports = mongoose.model("User", userSchema);
