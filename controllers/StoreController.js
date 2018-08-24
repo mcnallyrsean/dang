@@ -130,7 +130,21 @@ exports.mapStores = async (req, res) => {
     }
   };
   const stores = await Store.find(q)
-    .select("slug name description location")
+    .select("slug name description location photo")
     .limit(10);
   res.json(stores);
+};
+
+exports.mapPage = (req, res) => {
+  res.render("map", { title: "Map" });
+};
+
+exports.heartStore = async (req, res) => {
+  res.json({ it: "worked" });
+  console.log(req.user.hearts);
+  // const hearts = req.user.hearts.map(obj => {
+  //   obj.toString();
+  //   console.log(hearts);
+  //   res.json(hearts);
+  // });
 };
