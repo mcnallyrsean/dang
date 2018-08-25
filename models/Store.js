@@ -78,6 +78,11 @@ storeSchema.virtual("reviews", {
   foreignField: "store" //which field on the review?
 });
 
+function autopopulate(next) {
+  this.populate("reviews");
+  next();
+}
+
 storeSchema.statics.getTagsList = function() {
   return this.aggregate([
     { $unwind: "$tags" },
@@ -85,5 +90,44 @@ storeSchema.statics.getTagsList = function() {
     { $sort: { count: -1 } }
   ]);
 };
+
+storeSchema.statics.getTopStores = function() {
+  return this.aggregate([
+    // look up stores and populate their reviews
+    {
+      $lookup: {
+        from: "reviews",
+        localField: "_id",
+        foreignField: "store",
+        as: "reviews"
+      }
+    },
+    // filter for items that only have 2+ reviews
+    {
+      $match: { "reviews.1": { $exists: true } }
+    },
+    // add the avg reviews field
+    {
+      $project: {
+        photo: "$$ROOT.photo",
+        name: "$$ROOT.name",
+        reviews: "$$ROOT.reviews",
+        slug: "$$ROOT.slug",
+        averageRating: { $avg: "$reviews.rating" }
+      }
+    },
+    // sort it by our new field, highest reviews first
+    {
+      $sort: {
+        averageRating: -1
+      }
+    },
+    // limit it to at most 10
+    { $limit: 10 }
+  ]);
+};
+
+storeSchema.pre("find", autopopulate);
+storeSchema.pre("findOne", autopopulate);
 
 module.exports = mongoose.model("Store", storeSchema);
