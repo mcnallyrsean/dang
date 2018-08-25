@@ -3,6 +3,7 @@ const Store = mongoose.model("Store");
 const multer = require("multer");
 const jimp = require("jimp");
 const uuid = require("uuid");
+const User = mongoose.model("User");
 const multerOptions = {
   storage: multer.memoryStorage(),
   fileFilter(req, file, next) {
@@ -140,11 +141,19 @@ exports.mapPage = (req, res) => {
 };
 
 exports.heartStore = async (req, res) => {
-  res.json({ it: "worked" });
-  console.log(req.user.hearts);
-  // const hearts = req.user.hearts.map(obj => {
-  //   obj.toString();
-  //   console.log(hearts);
-  //   res.json(hearts);
-  // });
+  const hearts = req.user.hearts.map(obj => obj.toString());
+  const operator = hearts.includes(req.params.id) ? "$pull" : "$addToSet";
+  const user = await User.findByIdAndUpdate(
+    req.user._id,
+    { [operator]: { hearts: req.params.id } },
+    { new: true }
+  );
+  res.json(user);
+};
+
+exports.getHearts = async (req, res) => {
+  const stores = await Store.find({
+    _id: { $in: req.user.hearts }
+  });
+  res.render("stores", { title: "Hearts", stores });
 };
