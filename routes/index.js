@@ -3,6 +3,7 @@ const router = express.Router();
 const storeController = require("../controllers/StoreController");
 const userController = require("../controllers/UserController");
 const authController = require("../controllers/AuthController");
+const reviewController = require("../controllers/ReviewController");
 const { catchErrors } = require("../handlers/errorHandlers");
 // Do work here
 router.get("/", catchErrors(storeController.getStores));
@@ -53,6 +54,11 @@ router.get(
   "/hearts",
   authController.isLoggedIn,
   catchErrors(storeController.getHearts)
+);
+router.post(
+  "/reviews/:id",
+  authController.isLoggedIn,
+  catchErrors(reviewController.addReview)
 );
 
 // API
